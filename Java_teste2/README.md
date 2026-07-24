@@ -155,3 +155,97 @@ Após a execução do comando acima, os seguintes relatórios serão gerados na 
 4. Selecione o ambiente **ServeRest Environment** no seletor de ambientes do Postman (canto superior direito).
 5. Abra a coleção importada **ServeRest API Challenge**, clique nos três pontos `...` ao lado dela, selecione **Run collection** e clique no botão azul **Run ServeRest API Challenge** para executar todos os testes sequencialmente.
 
+---
+
+## 🏛️ Padrão de Arquitetura: Client/Utility Architecture
+
+O projeto implementa um padrão **desacoplado e reutilizável** para testes de API:
+
+### **Camada 1: Cliente HTTP (UserClient)**
+O arquivo `test/clients/user.client.js` encapsula todas as chamadas HTTP com SuperTest:
+
+```javascript
+static async createUser(userData) {
+    return supertest(baseUrl)
+        .post('/usuarios')
+        .send(userData);
+}
+
+static async login(email, password) {
+    return supertest(baseUrl)
+        .post('/login')
+        .send({ email, password });
+}
+```
+
+**Benefícios:**
+- ✅ Desacoplamento entre testes e chamadas HTTP
+- ✅ Reutilização de métodos em múltiplos testes
+- ✅ Fácil manutenção de endpoints (mudança em um único lugar)
+
+### **Camada 2: Utilitários (Utils)**
+O arquivo `test/utils/utils.js` fornece geradores de dados dinâmicos:
+
+```javascript
+static generateRandomUser(isAdmin = false) {
+    return {
+        nome: `Usuário Teste ${Date.now()}`,
+        email: `user${Date.now()}@teste.com`,
+        password: 'SecurePass123!',
+        administrador: isAdmin ? 'true' : 'false'
+    };
+}
+```
+
+**Benefícios:**
+- ✅ Evita conflito de dados entre testes (cada chamada gera email único)
+- ✅ Dados replicáveis e consistentes
+- ✅ Isolamento automático entre execuções
+
+### **Camada 3: Testes (Specs)**
+Os arquivos `test/specs/*.spec.js` consome as camadas anteriores:
+
+```javascript
+it('Cenário 1: Cadastro com sucesso', async () => {
+    const testUser = generateRandomUser();
+    const response = await UserClient.createUser(testUser);
+    
+    expect(response.status).to.equal(201);
+});
+```
+
+**Resultado:**
+- ✅ Testes limpos e legíveis
+- ✅ Foco no comportamento, não em detalhes técnicos
+- ✅ Fácil adicionar novos cenários
+
+---
+
+## 📝 Notas Técnicas
+
+### Isolamento de Testes
+Cada teste é **independente** através de:
+- **Massa de dados dinâmica:** Cada usuário criado recebe email único (timestamp + random)
+- **Limpeza automática:** Testes `DELETE` removem dados criados nos testes anteriores
+- **Timeout de 15 segundos:** Configurado em `package.json` para permitir latência da API remota
+
+### Configuração de Timeout
+No `package.json`, o timeout é definido como 15 segundos:
+```json
+{
+  "scripts": {
+    "test": "mocha test/specs/**/*.spec.js --reporter allure-mocha --timeout 15000"
+  }
+}
+```
+
+**Motivo:** A API ServeRest é pública e pode ter latência variável. O timeout de 15s oferece margem suficiente sem deixar testes pendurados indefinidamente.
+
+### Variáveis de Ambiente
+A URL da API é definida como variável no `test/clients/user.client.js`:
+```javascript
+const baseUrl = 'https://serverest.dev';
+```
+
+Para alterá-la em um ambiente customizado, basta modificar esta constante e executar os testes.
+
