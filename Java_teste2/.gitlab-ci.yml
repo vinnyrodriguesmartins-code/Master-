@@ -18,13 +18,13 @@ install_dependencies:
       - node_modules/
     expire_in: 1 hour
 
-run_tests:
+test_mocha:
   stage: test
   image: node:24
   dependencies:
     - install_dependencies
   script:
-    # Executa a suite de testes de API e gera os resultados para o Allure
+    # Executa a suite de testes de API (Mocha + SuperTest) e gera os resultados para o Allure
     - npm test
   artifacts:
     when: always
@@ -32,11 +32,27 @@ run_tests:
       - allure-results/
     expire_in: 7 days
 
+test_newman:
+  stage: test
+  image: node:24
+  dependencies:
+    - install_dependencies
+  script:
+    # Executa a suite de testes do Postman via Newman CLI
+    - npm run test:postman
+  artifacts:
+    when: always
+    paths:
+      - postman/newman-report.html
+    reports:
+      junit: postman/newman-report.xml
+    expire_in: 7 days
+
 generate_report:
   stage: report
   image: node:24
   dependencies:
-    - run_tests
+    - test_mocha
   script:
     - npx allure generate allure-results --clean
   artifacts:

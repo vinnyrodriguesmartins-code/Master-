@@ -7,6 +7,8 @@
 **/allure-report/
 **/errorShots/
 **/screenshots/
+**/postman/newman-report.html
+**/postman/newman-report.xml
 
 # Variáveis de ambiente e segredos
 .env

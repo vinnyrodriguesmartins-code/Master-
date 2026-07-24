@@ -72,11 +72,12 @@ graph TD
     A[Gatilho: Commit / Merge Request] --> B[Pipeline GitLab CI/CD]
     B --> C[Estágio: install dependencies]
     C --> D[Estágio: run_tests]
-    D -->|Executa Mocha + SuperTest| E{Status dos Testes}
+    D -->|Executa Mocha + SuperTest| E[Executa Postman + Newman]
+    E --> F{Status dos Testes}
     
-    E -->|Resultado Gerado| F[Estágio: generate_report]
-    F --> G[Publica Allure Report como Artefato]
-    G --> H[Fim do Fluxo]
+    F -->|Resultado Gerado| G[Estágio: generate_report]
+    G --> H[Publica Allure Report como Artefato]
+    H --> I[Fim do Fluxo]
 ```
 
 ---
@@ -85,6 +86,9 @@ graph TD
 
 ```text
 Java_teste2/
+├── postman/
+│   ├── ServeRest_API_Tests.postman_collection.json     # Coleção do Postman com os 12 cenários
+│   └── ServeRest_Environment.postman_environment.json # Ambiente de execução com variáveis (baseUrl)
 ├── test/
 │   ├── clients/
 │   │   └── user.client.js   # Cliente HTTP encapsulando as requisições com SuperTest
@@ -123,3 +127,31 @@ Os relatórios Allure salvam evidências estruturadas de logs e informações de
 - **Limpar resultados anteriores:** `npm run report:clear`
 - **Gerar relatório HTML:** `npm run report:generate`
 - **Abrir no navegador:** `npm run report:open`
+
+---
+
+## 📮 Execução via Postman / Newman
+
+Para dar flexibilidade total na avaliação do desafio, também disponibilizamos a suite de testes pronta para rodar no **Postman** e via linha de comando com o **Newman**.
+
+### 1. Rodar no Terminal com Newman CLI
+Você pode rodar toda a suite do Postman diretamente na linha de comando do terminal executando:
+```bash
+npm run test:postman
+```
+*Esse teste é executado automaticamente no pipeline do GitLab CI/CD como parte da validação de qualidade.*
+
+**Relatórios gerados pelo Newman:**
+Após a execução do comando acima, os seguintes relatórios serão gerados na pasta `postman/`:
+* `newman-report.html`: Relatório HTML interativo detalhado (gerado pelo `htmlextra`).
+* `newman-report.xml`: Relatório no formato JUnit XML, que é consumido pelo GitLab CI para exibir os resultados diretamente na aba **Tests** da pipeline.
+
+### 2. Importar e Executar no Postman (Interface Gráfica)
+1. Abra o aplicativo desktop do **Postman**.
+2. Clique no botão **Import** (canto superior esquerdo).
+3. Selecione os seguintes arquivos localizados na pasta `postman/`:
+   - [ServeRest_API_Tests.postman_collection.json](file:///c:/Projetos/Java_test/Java_teste2/postman/ServeRest_API_Tests.postman_collection.json) (Coleção contendo os 12 cenários de teste mapeados)
+   - [ServeRest_Environment.postman_environment.json](file:///c:/Projetos/Java_test/Java_teste2/postman/ServeRest_Environment.postman_environment.json) (Arquivo de ambiente com as variáveis configuradas, como `baseUrl` apontando para `https://serverest.dev`)
+4. Selecione o ambiente **ServeRest Environment** no seletor de ambientes do Postman (canto superior direito).
+5. Abra a coleção importada **ServeRest API Challenge**, clique nos três pontos `...` ao lado dela, selecione **Run collection** e clique no botão azul **Run ServeRest API Challenge** para executar todos os testes sequencialmente.
+

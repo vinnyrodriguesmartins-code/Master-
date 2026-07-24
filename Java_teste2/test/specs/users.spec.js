@@ -22,15 +22,15 @@ describe('Desafio API: Gerenciamento de Usuários (CRUD)', () => {
     });
 
     it('Cenário 2: Tentativa de cadastro com e-mail duplicado (POST - Falha)', async () => {
-        // Usa os mesmos dados do usuário criado no Cenário 1
+        // Para garantir o isolamento e a independência dos testes, criamos um usuário dinâmico
+        // e tentamos cadastrá-lo novamente com o mesmo e-mail para validar a falha por duplicidade.
         const response = await UserClient.createUser(testUser);
         
-        // Se por algum motivo o teste rodar isolado, cadastramos um e-mail primeiro
         if (response.status === 201) {
             const secondResponse = await UserClient.createUser(testUser);
             expect(secondResponse.status).to.equal(400);
             expect(secondResponse.body).to.have.property('message', 'Este email já está sendo usado');
-            await UserClient.deleteUser(response.body._id); // limpa
+            await UserClient.deleteUser(response.body._id); // Limpa o usuário temporário
         } else {
             expect(response.status).to.equal(400);
             expect(response.body).to.have.property('message', 'Este email já está sendo usado');
