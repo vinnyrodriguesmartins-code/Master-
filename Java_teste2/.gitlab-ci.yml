@@ -1,0 +1,46 @@
+stages:
+  - install
+  - test
+  - report
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+
+install_dependencies:
+  stage: install
+  image: node:24
+  script:
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+run_tests:
+  stage: test
+  image: node:24
+  dependencies:
+    - install_dependencies
+  script:
+    # Executa a suite de testes de API e gera os resultados para o Allure
+    - npm test
+  artifacts:
+    when: always
+    paths:
+      - allure-results/
+    expire_in: 7 days
+
+generate_report:
+  stage: report
+  image: node:24
+  dependencies:
+    - run_tests
+  script:
+    - npx allure generate allure-results --clean
+  artifacts:
+    paths:
+      - allure-report/
+    expire_in: 14 days
+  when: always

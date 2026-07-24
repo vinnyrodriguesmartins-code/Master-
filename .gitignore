@@ -1,0 +1,33 @@
+# Dependências (ambos os projetos)
+**/node_modules/
+**/package-lock.json
+
+# Relatórios e evidências de testes (ambos os projetos)
+**/allure-results/
+**/allure-report/
+**/errorShots/
+**/screenshots/
+
+# Variáveis de ambiente e segredos
+.env
+.env.local
+**/.env
+**/.env.local
+
+# Binários de aplicativos (evitar subir arquivos muito grandes ao git)
+**/apps/*.apk
+**/apps/*.zip
+
+# Logs
+**/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

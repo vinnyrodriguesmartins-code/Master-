@@ -1,0 +1,27 @@
+{
+  "validLogin": {
+    "email": "teste.carrefour@gmail.com",
+    "password": "Password123"
+  },
+  "invalidEmail": {
+    "email": "email_invalido_sem_arroba",
+    "password": "Password123",
+    "expectedError": "Please enter a valid email address"
+  },
+  "emptyPassword": {
+    "email": "teste.carrefour@gmail.com",
+    "password": "",
+    "expectedError": "Please enter at least 8 characters"
+  },
+  "validSignUp": {
+    "email": "novo.cadastro@gmail.com",
+    "password": "SecurePassword123",
+    "confirmPassword": "SecurePassword123"
+  },
+  "passwordMismatch": {
+    "email": "novo.cadastro@gmail.com",
+    "password": "SecurePassword123",
+    "confirmPassword": "DifferentPassword456",
+    "expectedError": "Please enter the same password"
+  }
+}

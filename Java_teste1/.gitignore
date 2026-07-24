@@ -1,0 +1,32 @@
+# Dependências
+node_modules/
+package-lock.json
+
+# Relatórios e evidências de testes
+allure-results/
+allure-report/
+errorShots/
+screenshots/
+
+# Variáveis de ambiente e segredos
+.env
+.env.local
+
+# Binários de aplicativos (evitar subir arquivos muito grandes ao git)
+apps/android.wdio.native.app.v2.2.0.apk
+apps/ios.simulator.wdio.native.app.v2.2.0.zip
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

@@ -1,0 +1,31 @@
+{
+  "name": "desafio-automacao-api",
+  "version": "1.0.0",
+  "description": "Desafio de Automação de Testes de API - Carrefour Banco",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "mocha test/specs/**/*.spec.js --reporter allure-mocha --timeout 15000",
+    "report:generate": "allure generate allure-results --clean",
+    "report:open": "allure open",
+    "report:clear": "rimraf allure-results allure-report"
+  },
+  "keywords": [
+    "api",
+    "testing",
+    "supertest",
+    "mocha",
+    "chai",
+    "allure"
+  ],
+  "author": "Paula Santiago",
+  "license": "ISC",
+  "devDependencies": {
+    "allure-commandline": "^2.30.0",
+    "allure-mocha": "^3.0.0",
+    "chai": "^5.1.1",
+    "mocha": "^10.7.0",
+    "rimraf": "^6.0.1",
+    "supertest": "^7.0.0"
+  }
+}
