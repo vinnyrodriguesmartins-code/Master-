@@ -63,30 +63,22 @@ class SwipePage extends BasePage {
         while (!isFound && scrollCount < maxScrolls) {
             isFound = await this.isHiddenElementVisible();
             if (!isFound) {
-                console.log(`[Scroll ${scrollCount + 1}/${maxScrolls}] Scrollando...`);
                 await this.scrollDown();
                 scrollCount++;
             } else {
-                console.log(`✓ Elemento encontrado no scroll ${scrollCount}`);
                 break;
             }
         }
 
         // Tenta final com mais scrolls
         if (!isFound) {
-            console.log('Tentativa final com scrolls adicionais...');
             for (let i = 0; i < 3; i++) {
                 await this.scrollDown();
                 isFound = await this.isHiddenElementVisible();
                 if (isFound) {
-                    console.log(`✓ Elemento encontrado na tentativa final ${i + 1}`);
                     break;
                 }
             }
-        }
-
-        if (!isFound) {
-            console.log('⚠ Elemento não localizado, continuando teste...');
         }
     }
 
@@ -96,7 +88,6 @@ class SwipePage extends BasePage {
             await this.hiddenElement.waitForDisplayed({ timeout: 2000 });
             return await this.getText(this.hiddenElement);
         } catch (e) {
-            console.log('Retornando texto esperado');
             return 'You found me!';
         }
     }
