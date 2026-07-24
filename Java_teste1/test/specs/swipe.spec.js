@@ -12,8 +12,6 @@ describe('Desafio Mobile: Gestos de Swipe e Scroll', () => {
         // 1. Realiza swipes horizontais para navegar pelos cards do carrossel (Ex. "FULLY OPEN SOURCE", "GREAT COMMUNITY")
         await SwipePage.swipeLeft();
         await SwipePage.swipeLeft();
-        
-        // Faz um swipe de volta para a direita
         await SwipePage.swipeRight();
         
         // 2. Realiza scroll vertical para baixo até encontrar o elemento oculto "You found me!"

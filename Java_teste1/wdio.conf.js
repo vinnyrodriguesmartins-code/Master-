@@ -81,15 +81,7 @@ export const config = {
     connectionRetryCount: 3,
     
     // Rodar o serviço Appium somente em execuções locais
-    services: process.env.BROWSERSTACK === 'true' ? [] : [
-        ['appium', {
-            args: {
-                address: 'localhost',
-                port: 4723
-            },
-            command: 'appium'
-        }]
-    ],
+    services: [],
     
     framework: 'mocha',
     reporters: [

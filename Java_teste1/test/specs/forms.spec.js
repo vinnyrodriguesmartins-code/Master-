@@ -8,8 +8,9 @@ describe('Desafio Mobile: Preenchimento de Formulários', () => {
         expect(await FormsPage.isDisplayed()).toBe(true);
     });
 
+
     it('Cenário 7: Digitação de texto e validação do feedback em tempo real', async () => {
-        const textToEnter = 'Carrefour Banco Mobile Automation Test';
+        const textToEnter = 'Carrefour Banco Mobile Test';
         await FormsPage.enterText(textToEnter);
         
         const result = await FormsPage.getInputResultText();
@@ -38,14 +39,40 @@ describe('Desafio Mobile: Preenchimento de Formulários', () => {
         // Clica no botão ativo e valida a exibição do alerta nativo
         await FormsPage.clickActiveButton();
         
-        await browser.waitUntil(async () => await browser.isAlertOpen(), {
-            timeout: 10000,
-            timeoutMsg: 'Alerta de botão ativo não apareceu'
-        });
+        let alertText = '';
+        if (driver.isAndroid) {
+            const alertTitleEl = $('android=new UiSelector().resourceId("android:id/alertTitle")');
+            const alertMsgEl = $('android=new UiSelector().resourceId("android:id/message")');
+            const okBtnEl = $('android=new UiSelector().resourceId("android:id/button1")');
+
+            await alertMsgEl.waitForDisplayed({ timeout: 10000 });
+            
+            let titleText = '';
+            try {
+                if (await alertTitleEl.isExisting()) {
+                    titleText = await alertTitleEl.getText();
+                }
+            } catch (e) {}
+            
+            const message = await alertMsgEl.getText();
+            alertText = titleText ? `${titleText} ${message}` : message;
+            await okBtnEl.click();
+        } else {
+            await browser.waitUntil(async () => {
+                try {
+                    await browser.getAlertText();
+                    return true;
+                } catch (err) {
+                    return false;
+                }
+            }, {
+                timeout: 10000,
+                timeoutMsg: 'Alerta de botão ativo não apareceu'
+            });
+            alertText = await browser.getAlertText();
+            await browser.acceptAlert();
+        }
         
-        const alertText = await browser.getAlertText();
         expect(alertText).toContain('This button is active');
-        
-        await browser.acceptAlert();
     });
 });

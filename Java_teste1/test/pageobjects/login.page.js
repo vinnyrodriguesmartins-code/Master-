@@ -27,6 +27,11 @@ class LoginPage extends BasePage {
     async login(email, password) {
         await this.setValue(this.emailInput, email);
         await this.setValue(this.passwordInput, password);
+        if (driver.isAndroid) {
+            try {
+                await driver.hideKeyboard();
+            } catch (e) {}
+        }
         await this.clickElement(this.loginSubmitButton);
     }
 
@@ -34,6 +39,11 @@ class LoginPage extends BasePage {
         await this.setValue(this.emailInput, email);
         await this.setValue(this.passwordInput, password);
         await this.setValue(this.confirmPasswordInput, confirmPassword);
+        if (driver.isAndroid) {
+            try {
+                await driver.hideKeyboard();
+            } catch (e) {}
+        }
         await this.clickElement(this.signUpSubmitButton);
     }
 
@@ -53,13 +63,41 @@ class LoginPage extends BasePage {
 
     // Captura e aceita alertas nativos (ex. de sucesso)
     async handleNativeAlert() {
-        await browser.waitUntil(async () => await browser.isAlertOpen(), {
-            timeout: 10000,
-            timeoutMsg: 'Alerta nativo não apareceu'
-        });
-        const text = await browser.getAlertText();
-        await browser.acceptAlert();
-        return text;
+        let alertText = '';
+        if (driver.isAndroid) {
+            const alertTitleEl = $('android=new UiSelector().resourceId("android:id/alertTitle")');
+            const alertMsgEl = $('android=new UiSelector().resourceId("android:id/message")');
+            const okBtnEl = $('android=new UiSelector().resourceId("android:id/button1")');
+
+            await alertMsgEl.waitForDisplayed({ timeout: 10000 });
+            
+            let titleText = '';
+            try {
+                if (await alertTitleEl.isExisting()) {
+                    titleText = await alertTitleEl.getText();
+                }
+            } catch (e) {}
+            
+            const message = await alertMsgEl.getText();
+            alertText = titleText ? `${titleText} ${message}` : message;
+            
+            await okBtnEl.click();
+        } else {
+            await browser.waitUntil(async () => {
+                try {
+                    await browser.getAlertText();
+                    return true;
+                } catch (err) {
+                    return false;
+                }
+            }, {
+                timeout: 10000,
+                timeoutMsg: 'Alerta nativo não apareceu'
+            });
+            alertText = await browser.getAlertText();
+            await browser.acceptAlert();
+        }
+        return alertText;
     }
 }
 

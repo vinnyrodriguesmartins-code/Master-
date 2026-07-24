@@ -53,8 +53,21 @@ export default class BasePage {
         return await element.getText();
     }
 
+    async scrollIntoViewByAccessibilityId(id) {
+        if (driver.isAndroid) {
+            try {
+                await $(`android=new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().description("${id}"))`);
+            } catch (e) {}
+        } else {
+            try {
+                const el = await $(`~${id}`);
+                await el.scrollIntoView();
+            } catch (e) {}
+        }
+    }
+
     // Gestos de Swipe genéricos baseados no tamanho da tela
-    async swipe({ from, to }) {
+    async swipe({ from, to, duration = 1000 }) {
         await browser.performActions([{
             type: 'pointer',
             id: 'finger1',
@@ -62,7 +75,7 @@ export default class BasePage {
             actions: [
                 { type: 'pointerMove', duration: 0, x: from.x, y: from.y },
                 { type: 'pointerDown', button: 0 },
-                { type: 'pointerMove', duration: 1000, x: to.x, y: to.y },
+                { type: 'pointerMove', duration: duration, x: to.x, y: to.y },
                 { type: 'pointerUp', button: 0 }
             ]
         }]);
@@ -85,8 +98,8 @@ export default class BasePage {
 
     async swipeUp() {
         const size = await browser.getWindowSize();
-        const from = { x: Math.round(size.width * 0.5), y: Math.round(size.height * 0.8) };
-        const to = { x: Math.round(size.width * 0.5), y: Math.round(size.height * 0.2) };
+        const from = { x: Math.round(size.width * 0.5), y: Math.round(size.height * 0.7) };
+        const to = { x: Math.round(size.width * 0.5), y: Math.round(size.height * 0.3) };
         await this.swipe({ from, to });
     }
 }
