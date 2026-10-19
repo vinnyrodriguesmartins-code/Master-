@@ -2,6 +2,8 @@
 
 Este repositório contém a implementação do **Desafio de Automação de Testes Mobile**, cobrindo 10 cenários de testes automatizados de ponta a ponta no aplicativo demonstrativo `native-demo-app` da **WebdriverIO**.
 
+> 🤖 **Diferencial:** o projeto integra **IA Generativa com RAG (Retrieval-Augmented Generation)** usando **Google Gemini**. Uma IA conhece todo o código e o histórico de execuções, responde perguntas sobre a suíte e **monitora cada execução**, diagnosticando automaticamente as falhas e comentando no Merge Request. [Ver seção ↓](#-ia-aplicada-rag--ai-monitor-de-testes)
+
 ---
 
 ## 🛠️ Tecnologias e Ferramentas Utilizadas
@@ -14,6 +16,7 @@ Este repositório contém a implementação do **Desafio de Automação de Teste
 - **Relatórios:** Allure Report
 - **Padrão de Projeto:** Page Object Pattern
 - **Estratégias Avançadas:** Testes Baseados em Dados (Data-Driven Testing) via JSON, gestos nativos de swipe/scroll e captura automática de evidências em falhas.
+- **IA / RAG:** Google Gemini (`gemini-2.5-flash` + `gemini-embedding-001`) via `@google/genai`, vector store local com similaridade de cosseno, indexação incremental e análise automática de falhas.
 
 ---
 
@@ -138,6 +141,15 @@ Java_teste1/
 │       ├── navigation.spec.js # Cenário 6 (Fluxo de navegação completo na Tab Bar)
 │       ├── forms.spec.js     # Cenários de 7 a 9 (Interações de inputs, toggle, picker e alertas)
 │       └── swipe.spec.js     # Cenário 10 (Gestos horizontais de carrossel e scroll vertical de tela)
+├── ai/                   # 🤖 IA / RAG
+│   ├── lib.js            # Cliente Gemini, chunking, embeddings e vector store
+│   ├── index.js          # Indexação incremental (código + docs + resultados Allure)
+│   ├── watch.js          # Reindexação automática ao alterar arquivos
+│   ├── ask.js            # Perguntas sobre o projeto (CLI)
+│   ├── monitor.js        # AI Monitor: diagnóstico de falhas pós-execução
+│   └── gitlab-comment.js # Publica o diagnóstico no Merge Request
+├── scripts/
+│   └── start-emulator.js # Inicialização do emulador antes da suíte
 ├── wdio.conf.js          # Configurações do WebdriverIO, Appium, Allure e ganchos (Hooks) de falhas
 ├── .gitlab-ci.yml        # Configuração do pipeline CI/CD (GitLab CI/CD)
 ├── package.json          # Dependências e scripts do projeto NPM
@@ -244,6 +256,69 @@ Para gerar e abrir o relatório dinâmico interativo:
 
 ---
 
+## 🤖 IA Aplicada: RAG + AI Monitor de Testes
+
+Além da automação, o projeto aplica **IA Generativa** para acelerar a análise de falhas — uma das tarefas mais custosas em QA mobile.
+
+### Conceitos aplicados
+
+| Conceito | Como foi aplicado |
+| :--- | :--- |
+| **RAG (Retrieval-Augmented Generation)** | As respostas da IA são fundamentadas no código real do projeto e no histórico do Allure, com citação das fontes. |
+| **Embeddings & busca vetorial** | Arquivos são divididos em *chunks*, convertidos em vetores (`gemini-embedding-001`) e recuperados por **similaridade de cosseno**. |
+| **Indexação incremental** | Cada chunk recebe um hash SHA-1; apenas trechos novos/alterados são re-embedados (menor custo e latência). |
+| **Agente de monitoramento** | Hook `onComplete` do WebdriverIO dispara a IA ao fim de cada execução para diagnosticar falhas. |
+| **Prompt engineering** | Prompts estruturados retornam: causa provável, evidências, correção sugerida e detecção de *flaky tests*. |
+| **AIOps no CI/CD** | Job `ai_review` no GitLab publica o diagnóstico como comentário no Merge Request. |
+
+### Arquitetura
+
+```mermaid
+graph LR
+    subgraph Fontes
+        A[test/ pageobjects + specs]
+        B[README / wdio.conf / CI]
+        C[allure-results histórico]
+    end
+    A --> D[Chunking + hash SHA-1]
+    B --> D
+    C --> D
+    D --> E[Gemini Embeddings]
+    E --> F[(Vector Store local)]
+
+    G[npm run rag:ask] --> H[Busca por similaridade]
+    I[wdio onComplete / CI] --> J[AI Monitor: testes com falha]
+    J --> H
+    F --> H
+    H --> K[Gemini 2.5 Flash]
+    K --> L[Resposta com fontes]
+    K --> M[ai-reports/latest.md]
+    M --> N[Comentário no Merge Request]
+```
+
+### Como usar
+
+```bash
+cp .env.example .env          # defina GEMINI_API_KEY
+npm run rag:index             # cria/atualiza o índice (incremental; --full para recriar)
+npm run rag:watch             # reindexa automaticamente ao salvar arquivos
+npm run rag:ask -- "Como funciona o teste de swipe?"
+npm test                      # roda a suíte + diagnóstico automático em ai-reports/latest.md
+npm run ai:monitor            # analisa manualmente os resultados existentes
+```
+
+### Exemplo de diagnóstico gerado (ilustrativo)
+
+```markdown
+## ❌ Swipe e Gestos - deve encontrar o texto oculto
+1. Causa provável: o seletor `~WebdriverIO logo` não fica visível antes do timeout de 2s em `swipe.page.js`.
+2. Evidências: [1] test/pageobjects/swipe.page.js — `waitForDisplayed({ timeout: 2000 })`
+3. Correção sugerida: aumentar o timeout e usar `scrollIntoView` ...
+4. Flaky? Sim — o histórico mostra alternação entre passed/failed.
+```
+
+> Desative a análise automática com `AI_MONITOR=false`. Falhas da IA nunca interrompem a suíte de testes.
+
 ---
 
 ## 🛠️ Dicas de Execução
@@ -302,3 +377,4 @@ O pipeline foi desenhado no arquivo `.gitlab-ci.yml` contendo os seguintes está
 - **`install`**: Restaura as dependências do Node.js.
 - **`test`**: Roda os testes na nuvem do BrowserStack passando credenciais seguras parametrizadas nas variáveis protegidas do GitLab.
 - **`report`**: Gera os relatórios Allure e os expõe como artefatos acessíveis no GitLab.
+- **`ai_review`** (estágio `report`): reindexa o projeto com os resultados da execução, gera o diagnóstico de falhas com IA e publica no Merge Request. Requer as variáveis `GEMINI_API_KEY` e `GITLAB_TOKEN` (escopo `api`).

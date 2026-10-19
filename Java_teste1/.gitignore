@@ -8,6 +8,10 @@ allure-report/
 errorShots/
 screenshots/
 
+# IA / RAG
+ai/.index/
+ai-reports/
+
 # Variáveis de ambiente e segredos
 .env
 .env.local

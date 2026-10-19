@@ -5,10 +5,16 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "wdio": "wdio run wdio.conf.js",
+    "wdio": "node scripts/start-emulator.js && wdio run wdio.conf.js",
+    "test": "npm run wdio",
     "report:generate": "allure generate allure-results --clean",
     "report:open": "allure open",
-    "report:clear": "rimraf allure-results allure-report"
+    "report:clear": "rimraf allure-results allure-report",
+    "rag:index": "node ai/index.js",
+    "rag:watch": "node ai/watch.js",
+    "rag:ask": "node ai/ask.js",
+    "ai:monitor": "node ai/monitor.js",
+    "ai:comment": "node ai/gitlab-comment.js"
   },
   "keywords": [
     "webdriverio",
@@ -21,6 +27,7 @@
   "author": "Felipe Milagres",
   "license": "ISC",
   "devDependencies": {
+    "@google/genai": "^2.30.0",
     "@wdio/allure-reporter": "^9.3.0",
     "@wdio/appium-service": "^9.3.0",
     "@wdio/cli": "^9.3.0",
@@ -28,6 +35,7 @@
     "@wdio/mocha-framework": "^9.3.0",
     "@wdio/spec-reporter": "^9.3.0",
     "allure-commandline": "^2.30.0",
+    "dotenv": "^18.0.8",
     "rimraf": "^6.0.1"
   }
 }

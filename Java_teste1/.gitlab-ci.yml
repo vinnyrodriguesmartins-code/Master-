@@ -28,6 +28,7 @@ run_tests:
     - npm run wdio
   variables:
     BROWSERSTACK: "true"
+    AI_MONITOR: "false"
     BROWSERSTACK_USERNAME: $BROWSERSTACK_USERNAME
     BROWSERSTACK_ACCESS_KEY: $BROWSERSTACK_ACCESS_KEY
     BROWSERSTACK_APP_ID: $BROWSERSTACK_APP_ID
@@ -49,3 +50,22 @@ generate_report:
       - allure-report/
     expire_in: 14 days
   when: always
+
+ai_review:
+  stage: report
+  image: node:24
+  dependencies:
+    - install_dependencies
+    - run_tests
+  # Requer variáveis CI/CD (masked): GEMINI_API_KEY e GITLAB_TOKEN (escopo "api")
+  script:
+    - npm run rag:index
+    - npm run ai:monitor
+    - npm run ai:comment
+  artifacts:
+    when: always
+    paths:
+      - ai-reports/
+    expire_in: 14 days
+  when: always
+  allow_failure: true

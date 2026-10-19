@@ -1,5 +1,7 @@
 import { join } from 'path';
 
+let runStartedAt = Date.now();
+
 // Determina as capabilities com base nas variáveis de ambiente
 let capabilities = [];
 
@@ -107,6 +109,21 @@ export const config = {
     afterTest: async function(test, context, { error, result, duration, passed, retries }) {
         if (!passed) {
             await browser.takeScreenshot();
+        }
+    },
+
+    onPrepare: function() {
+        runStartedAt = Date.now();
+    },
+
+    // AI Monitor: analisa as falhas desta execução com RAG e gera ai-reports/latest.md
+    onComplete: async function() {
+        if (process.env.AI_MONITOR === 'false') return;
+        try {
+            const { runMonitor } = await import('./ai/monitor.js');
+            await runMonitor({ sinceMs: runStartedAt });
+        } catch (e) {
+            console.warn('⚠️  [AI Monitor] Falhou:', e.message);
         }
     }
 };
