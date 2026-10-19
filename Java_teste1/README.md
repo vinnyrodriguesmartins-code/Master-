@@ -150,6 +150,8 @@ Java_teste1/
 │   └── gitlab-comment.js # Publica o diagnóstico no Merge Request
 ├── scripts/
 │   └── start-emulator.js # Inicialização do emulador antes da suíte
+├── config.js             # ⚙️ Configuração centralizada: única fonte de variáveis de ambiente (.env + defaults)
+├── .env.example          # Modelo documentado de todas as variáveis
 ├── wdio.conf.js          # Configurações do WebdriverIO, Appium, Allure e ganchos (Hooks) de falhas
 ├── .gitlab-ci.yml        # Configuração do pipeline CI/CD (GitLab CI/CD)
 ├── package.json          # Dependências e scripts do projeto NPM

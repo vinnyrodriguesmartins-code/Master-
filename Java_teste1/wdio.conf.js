@@ -1,15 +1,17 @@
 import { join } from 'path';
+import settings from './config.js';
 
+const bs = settings.browserstack;
 let runStartedAt = Date.now();
 
 // Determina as capabilities com base nas variáveis de ambiente
 let capabilities = [];
 
-if (process.env.BROWSERSTACK === 'true') {
+if (bs.enabled) {
     capabilities = [{
         'bstack:options': {
-            userName: process.env.BROWSERSTACK_USERNAME || 'YOUR_USERNAME',
-            accessKey: process.env.BROWSERSTACK_ACCESS_KEY || 'YOUR_ACCESS_KEY',
+            userName: bs.username,
+            accessKey: bs.accessKey,
             projectName: "Desafio Carrefour Banco",
             buildName: "Build 1.0",
             sessionName: "Testes Mobile"
@@ -17,10 +19,10 @@ if (process.env.BROWSERSTACK === 'true') {
         platformName: "android",
         "appium:platformVersion": "11.0",
         "appium:deviceName": "Google Pixel 5",
-        "appium:app": process.env.BROWSERSTACK_APP_ID || "bs://demo-app-handshake",
+        "appium:app": bs.appId,
         "appium:automationName": "UiAutomator2"
     }];
-} else if (process.env.TEST_PLATFORM === 'ios') {
+} else if (settings.test.platform === 'ios') {
     capabilities = [{
         platformName: 'iOS',
         'appium:deviceName': 'iPhone 15 Simulator',
@@ -48,9 +50,9 @@ export const config = {
     // ====================
     //
     runner: 'local',
-    port: process.env.BROWSERSTACK === 'true' ? 80 : 4723,
-    path: process.env.BROWSERSTACK === 'true' ? '/wd/hub' : '/',
-    hostname: process.env.BROWSERSTACK === 'true' ? 'hub-cloud.browserstack.com' : 'localhost',
+    port: bs.enabled ? 80 : 4723,
+    path: bs.enabled ? '/wd/hub' : '/',
+    hostname: bs.enabled ? 'hub-cloud.browserstack.com' : 'localhost',
     
     //
     // ==================
@@ -118,7 +120,7 @@ export const config = {
 
     // AI Monitor: analisa as falhas desta execução com RAG e gera ai-reports/latest.md
     onComplete: async function() {
-        if (process.env.AI_MONITOR === 'false') return;
+        if (!settings.ai.monitorEnabled) return;
         try {
             const { runMonitor } = await import('./ai/monitor.js');
             await runMonitor({ sinceMs: runStartedAt });

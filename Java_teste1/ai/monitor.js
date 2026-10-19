@@ -4,9 +4,10 @@ import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
 import { readAllureResults, retrieve, formatContext, generate, REPORTS_DIR, INDEX_FILE } from './lib.js';
+import settings from '../config.js';
 
 export async function runMonitor({ sinceMs } = {}) {
-    if (!process.env.GEMINI_API_KEY) {
+    if (!settings.ai.apiKey) {
         console.warn('⚠️  [AI Monitor] GEMINI_API_KEY ausente — análise ignorada.');
         return null;
     }

@@ -1,5 +1,6 @@
 import { execSync, spawn } from 'child_process';
 import path from 'path';
+import settings from '../config.js';
 
 function isEmulatorRunning() {
     try {
@@ -19,7 +20,7 @@ function isEmulatorRunning() {
 }
 
 function getEmulatorPath() {
-    const androidHome = process.env.ANDROID_HOME;
+    const androidHome = settings.test.androidHome;
     if (!androidHome) {
         throw new Error('ANDROID_HOME environment variable is not defined!');
     }
@@ -43,11 +44,11 @@ function getAvailableAvd() {
 
 async function startEmulator() {
     // Pula a inicialização se rodar no BrowserStack ou iOS
-    if (process.env.BROWSERSTACK === 'true') {
+    if (settings.browserstack.enabled) {
         console.log('Running on BrowserStack, skipping local emulator check.');
         return;
     }
-    if (process.env.TEST_PLATFORM === 'ios') {
+    if (settings.test.platform === 'ios') {
         console.log('Running on iOS, skipping Android emulator check.');
         return;
     }

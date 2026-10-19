@@ -1,5 +1,5 @@
 // Núcleo do RAG: cliente Gemini, coleta de arquivos, chunking, embeddings e vector store local (JSON)
-import 'dotenv/config';
+import settings from '../config.js';
 import { GoogleGenAI } from '@google/genai';
 import fs from 'fs';
 import path from 'path';
@@ -8,15 +8,15 @@ export const ROOT = process.cwd();
 export const INDEX_FILE = path.join(ROOT, 'ai', '.index', 'vectors.json');
 export const REPORTS_DIR = path.join(ROOT, 'ai-reports');
 
-export const EMBED_MODEL = process.env.GEMINI_EMBED_MODEL || 'gemini-embedding-001';
-export const CHAT_MODEL = process.env.GEMINI_CHAT_MODEL || 'gemini-2.5-flash';
+export const EMBED_MODEL = settings.ai.embedModel;
+export const CHAT_MODEL = settings.ai.chatModel;
 
 let _client;
 export function client() {
-    if (!process.env.GEMINI_API_KEY) {
+    if (!settings.ai.apiKey) {
         throw new Error('GEMINI_API_KEY não definida. Crie um arquivo .env (veja .env.example).');
     }
-    return (_client ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }));
+    return (_client ??= new GoogleGenAI({ apiKey: settings.ai.apiKey }));
 }
 
 // ---------- Coleta de fontes ----------

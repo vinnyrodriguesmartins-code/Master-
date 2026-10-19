@@ -4,7 +4,10 @@ import fs from 'fs';
 import path from 'path';
 import { REPORTS_DIR } from './lib.js';
 
-const { CI_API_V4_URL, CI_PROJECT_ID, CI_MERGE_REQUEST_IID, CI_COMMIT_REF_NAME, GITLAB_TOKEN, CI_PIPELINE_URL } = process.env;
+import settings from '../config.js';
+
+const { apiUrl: CI_API_V4_URL, projectId: CI_PROJECT_ID, mergeRequestIid: CI_MERGE_REQUEST_IID,
+    branch: CI_COMMIT_REF_NAME, token: GITLAB_TOKEN, pipelineUrl: CI_PIPELINE_URL } = settings.gitlab;
 const file = path.join(REPORTS_DIR, 'latest.md');
 
 if (!GITLAB_TOKEN || !CI_API_V4_URL) { console.log('ℹ️  Fora do CI ou GITLAB_TOKEN ausente — comentário ignorado.'); process.exit(0); }
